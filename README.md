@@ -12,7 +12,7 @@ Live app: https://condod.github.io/launch-line-client-radar/
 - Audit Workspace with evidence toggles, instant radar rescoring, and a persisted 0-10 weighted sales scorecard.
 - Playbooks with vertical pain points, objections, and rebuttals.
 - Offer Builder with 10 selectable automation-first products, one-time setup pricing, software-cost disclosure, and client-ready proposal text.
-- Call Center with human click-to-call, documented consent, approval-gated AI outbound calls, inbound AI receptionist controls, and call history.
+- Call Center with human click-to-call, documented consent, approval-gated AI outbound calls, an inbound AI receptionist, conflict-checked callback scheduling, calendar export, and call history.
 - Export Center with JSON backup/restore, CSV exports, print summary, and operator commands.
 - Settings with business identity, contact info, proposal defaults, optional care-plan floor, and launch checklist.
 

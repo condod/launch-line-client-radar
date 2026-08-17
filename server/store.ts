@@ -4,10 +4,11 @@ import type { CallData, RuntimeVoiceSettings } from './types.js';
 
 function newData(settings: RuntimeVoiceSettings): CallData {
   return {
-    version: 1,
+    version: 2,
     settings,
     consents: {},
     calls: [],
+    appointments: [],
     contexts: {},
     handledWebhookIds: []
   };
@@ -24,9 +25,11 @@ export class CallStore {
       return {
         ...newData(this.defaults),
         ...parsed,
+        version: 2,
         settings: { ...this.defaults, ...parsed.settings },
         consents: parsed.consents && typeof parsed.consents === 'object' ? parsed.consents : {},
         calls: Array.isArray(parsed.calls) ? parsed.calls.slice(0, 1000) : [],
+        appointments: Array.isArray(parsed.appointments) ? parsed.appointments.slice(0, 1000) : [],
         contexts: parsed.contexts && typeof parsed.contexts === 'object' ? parsed.contexts : {},
         handledWebhookIds: Array.isArray(parsed.handledWebhookIds) ? parsed.handledWebhookIds.slice(-500) : []
       };
@@ -52,6 +55,7 @@ export class CallStore {
       const data = await this.loadUnsafe();
       result = await mutator(data);
       data.calls = data.calls.slice(0, 1000);
+      data.appointments = data.appointments.slice(0, 1000);
       data.handledWebhookIds = data.handledWebhookIds.slice(-500);
       const cutoff = Date.now() - 24 * 60 * 60 * 1000;
       data.contexts = Object.fromEntries(Object.entries(data.contexts).filter(([, context]) => new Date(context.createdAt).getTime() >= cutoff));
@@ -62,4 +66,3 @@ export class CallStore {
     return result;
   }
 }
-

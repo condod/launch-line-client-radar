@@ -219,6 +219,25 @@ export type ProspectCallRecord = {
 
 export type CallDirection = 'inbound' | 'outbound';
 export type CallMode = 'human' | 'ai';
+export type CallbackAppointmentStatus = 'scheduled' | 'completed' | 'cancelled';
+
+export type CallbackAppointment = {
+  id: string;
+  callId: string;
+  prospectId?: string;
+  contactName: string;
+  businessName: string;
+  phone: string;
+  email?: string;
+  scheduledFor: string;
+  timeZone: string;
+  durationMinutes: number;
+  needsSummary: string;
+  details: string;
+  status: CallbackAppointmentStatus;
+  createdAt: string;
+  updatedAt: string;
+};
 
 export type CallHistoryItem = {
   id: string;
@@ -232,6 +251,7 @@ export type CallHistoryItem = {
   updatedAt: string;
   durationSeconds?: number;
   providerCallSid?: string;
+  appointmentId?: string;
   summary?: string;
 };
 
@@ -247,6 +267,10 @@ export type CallCenterSettings = {
   timeZone: string;
   maxAiAttempts: number;
   bookingUrl: string;
+  callbackWindowStart: number;
+  callbackWindowEnd: number;
+  callbackDays: number[];
+  callbackDurationMinutes: number;
   aiDisclosure: string;
 };
 
@@ -254,6 +278,7 @@ export type CallCenterState = {
   settings: CallCenterSettings;
   records: Record<string, ProspectCallRecord>;
   history: CallHistoryItem[];
+  appointments: CallbackAppointment[];
 };
 
 export type AppState = {

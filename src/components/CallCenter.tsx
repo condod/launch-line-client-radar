@@ -1,6 +1,9 @@
 import { useMemo, useState } from 'react';
-import { callRecordFor, canStartAiCall, canStartManualCall, normalizePhoneToE164, phoneHref } from '../lib/callCenter';
+import { callbackCalendarContents, callRecordFor, canStartAiCall, canStartManualCall, normalizePhoneToE164, phoneHref } from '../lib/callCenter';
+import { downloadTextFile } from '../lib/exportImport';
 import type {
+  CallbackAppointment,
+  CallbackAppointmentStatus,
   CallCenterSettings,
   CallCenterState,
   CallConsentStatus,
@@ -27,7 +30,14 @@ type ServiceHealth = {
     publicUrl: boolean;
   };
   businessPhone: string;
+  scheduledCallbacks: number;
 };
+
+const callbackDayPresets = [
+  { value: 'weekdays', label: 'Monday-Friday', days: [1, 2, 3, 4, 5] },
+  { value: 'monday-saturday', label: 'Monday-Saturday', days: [1, 2, 3, 4, 5, 6] },
+  { value: 'daily', label: 'Every day', days: [0, 1, 2, 3, 4, 5, 6] }
+];
 
 type CallCenterProps = {
   callCenter: CallCenterState;
@@ -64,6 +74,23 @@ function displayPhone(value: string): string {
   return value;
 }
 
+function callbackDayPreset(days: number[]): string {
+  const key = [...days].sort((a, b) => a - b).join(',');
+  return callbackDayPresets.find((preset) => preset.days.join(',') === key)?.value ?? 'custom';
+}
+
+function displayAppointmentTime(appointment: CallbackAppointment): string {
+  return new Intl.DateTimeFormat('en-US', {
+    timeZone: appointment.timeZone,
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZoneName: 'short'
+  }).format(new Date(appointment.scheduledFor));
+}
+
 export function CallCenter({ callCenter, prospects, selectedLeadId, onSelectLead, onUpdateCallCenter, onUpdateLead, onStatus }: CallCenterProps) {
   const [accessKey, setAccessKey] = useState(sessionAccessKey);
   const [serviceHealth, setServiceHealth] = useState<ServiceHealth | null>(null);
@@ -77,6 +104,14 @@ export function CallCenter({ callCenter, prospects, selectedLeadId, onSelectLead
   const sortedHistory = useMemo(
     () => [...callCenter.history].sort((a, b) => b.startedAt.localeCompare(a.startedAt)).slice(0, 20),
     [callCenter.history]
+  );
+  const sortedAppointments = useMemo(
+    () => [...callCenter.appointments].sort((a, b) => {
+      if (a.status === 'scheduled' && b.status !== 'scheduled') return -1;
+      if (a.status !== 'scheduled' && b.status === 'scheduled') return 1;
+      return a.scheduledFor.localeCompare(b.scheduledFor);
+    }).slice(0, 30),
+    [callCenter.appointments]
   );
 
   function updateSettings(patch: Partial<CallCenterSettings>) {
@@ -285,16 +320,53 @@ export function CallCenter({ callCenter, prospects, selectedLeadId, onSelectLead
     }
     setWorking(true);
     try {
-      const response = await fetch(serviceUrl(callCenter.settings.serviceBaseUrl, '/api/calls'), { headers: authHeaders() });
-      const body = await readApiResponse(response);
-      const history = Array.isArray(body.calls) ? body.calls as CallHistoryItem[] : [];
-      onUpdateCallCenter({ ...callCenter, history: history.slice(0, 500) });
-      onStatus(`Loaded ${history.length} call records from the voice service.`);
+      const [callsResponse, appointmentsResponse] = await Promise.all([
+        fetch(serviceUrl(callCenter.settings.serviceBaseUrl, '/api/calls'), { headers: authHeaders() }),
+        fetch(serviceUrl(callCenter.settings.serviceBaseUrl, '/api/appointments'), { headers: authHeaders() })
+      ]);
+      const callsBody = await readApiResponse(callsResponse);
+      const appointmentsBody = await readApiResponse(appointmentsResponse);
+      const history = Array.isArray(callsBody.calls) ? callsBody.calls as CallHistoryItem[] : [];
+      const appointments = Array.isArray(appointmentsBody.appointments) ? appointmentsBody.appointments as CallbackAppointment[] : [];
+      onUpdateCallCenter({ ...callCenter, history: history.slice(0, 500), appointments: appointments.slice(0, 500) });
+      onStatus(`Loaded ${history.length} calls and ${appointments.filter((item) => item.status === 'scheduled').length} scheduled callbacks.`);
     } catch (error) {
-      onStatus(error instanceof Error ? error.message : 'Call history could not be loaded.');
+      onStatus(error instanceof Error ? error.message : 'Call center activity could not be loaded.');
     } finally {
       setWorking(false);
     }
+  }
+
+  async function updateAppointmentStatus(appointment: CallbackAppointment, status: CallbackAppointmentStatus) {
+    if (!callCenter.settings.serviceBaseUrl.trim() || !accessKey.trim()) {
+      onStatus('Connect the voice service before changing an appointment.');
+      return;
+    }
+    setWorking(true);
+    try {
+      const response = await fetch(serviceUrl(callCenter.settings.serviceBaseUrl, `/api/appointments/${encodeURIComponent(appointment.id)}/status`), {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ status })
+      });
+      const body = await readApiResponse(response);
+      const updated = body.appointment as CallbackAppointment;
+      onUpdateCallCenter({
+        ...callCenter,
+        appointments: callCenter.appointments.map((item) => item.id === appointment.id ? updated : item)
+      });
+      onStatus(`${appointment.contactName}'s callback was marked ${status}.`);
+    } catch (error) {
+      onStatus(error instanceof Error ? error.message : 'The callback could not be updated.');
+    } finally {
+      setWorking(false);
+    }
+  }
+
+  function downloadAppointment(appointment: CallbackAppointment) {
+    const filename = `launch-line-callback-${appointment.scheduledFor.slice(0, 10)}.ics`;
+    downloadTextFile(filename, callbackCalendarContents(appointment), 'text/calendar;charset=utf-8');
+    onStatus(`Calendar event created for ${appointment.contactName}.`);
   }
 
   if (!selectedLead || !record) {
@@ -306,8 +378,8 @@ export function CallCenter({ callCenter, prospects, selectedLeadId, onSelectLead
       <section className="page-header split-header">
         <div>
           <p className="eyebrow">Call Center</p>
-          <h2>Human-approved outreach and an inbound AI receptionist</h2>
-          <p>Manual calling remains available for reviewed business leads. Autonomous AI calls require documented written consent and pass the server-side calling policy again.</p>
+          <h2>Qualified conversations and booked human follow-ups</h2>
+          <p>The AI can learn what a client needs, transfer high-intent callers, or confirm a callback appointment with the details a real person needs to continue.</p>
         </div>
         <div className="call-center-number">
           <span>Business line</span>
@@ -319,7 +391,7 @@ export function CallCenter({ callCenter, prospects, selectedLeadId, onSelectLead
         <section className="panel mode-panel">
           <span className="mode-kicker">Inbound</span>
           <h3>AI receptionist</h3>
-          <p>Answers callers, identifies itself as AI, qualifies the request, and offers to transfer high-intent prospects to {callCenter.settings.transferPhone ? displayPhone(callCenter.settings.transferPhone) : 'the human sales line'}.</p>
+          <p>Answers callers, identifies itself as AI, captures the request, and offers a live transfer to {callCenter.settings.transferPhone ? displayPhone(callCenter.settings.transferPhone) : 'the human sales line'} or a scheduled human callback.</p>
           <label className="toggle-row">
             <input
               checked={callCenter.settings.receptionistEnabled}
@@ -372,7 +444,7 @@ export function CallCenter({ callCenter, prospects, selectedLeadId, onSelectLead
         </div>
         <div className="action-row">
           <button className="secondary-action" disabled={working} onClick={testService} type="button">Test service</button>
-          <button className="secondary-action" disabled={working} onClick={refreshHistory} type="button">Refresh call history</button>
+          <button className="secondary-action" disabled={working} onClick={refreshHistory} type="button">Refresh calls & callbacks</button>
           {serviceHealth ? (
             <span className={serviceHealth.configured.twilio && serviceHealth.configured.openai ? 'service-state ready' : 'service-state warning'}>
               Twilio {serviceHealth.configured.twilio ? 'ready' : 'setup needed'} / OpenAI {serviceHealth.configured.openai ? 'ready' : 'setup needed'}
@@ -484,6 +556,45 @@ export function CallCenter({ callCenter, prospects, selectedLeadId, onSelectLead
         </section>
       </div>
 
+      <section className="panel callback-panel">
+        <div className="section-heading callback-heading">
+          <div>
+            <p className="eyebrow">Human follow-up</p>
+            <h2>Scheduled callbacks</h2>
+          </div>
+          <span className="callback-count">{callCenter.appointments.filter((item) => item.status === 'scheduled').length} scheduled</span>
+        </div>
+        {sortedAppointments.length ? (
+          <div className="table-wrap">
+            <table className="prospect-table callback-table">
+              <thead><tr><th>Appointment</th><th>Contact</th><th>Requested outcome</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody>
+                {sortedAppointments.map((appointment) => (
+                  <tr key={appointment.id}>
+                    <td><strong>{displayAppointmentTime(appointment)}</strong><small>{appointment.durationMinutes} minutes</small></td>
+                    <td><strong>{appointment.contactName}</strong><small>{appointment.businessName}</small><small>{displayPhone(appointment.phone)}{appointment.email ? ` / ${appointment.email}` : ''}</small></td>
+                    <td><strong>{appointment.needsSummary}</strong>{appointment.details ? <small>{appointment.details}</small> : null}</td>
+                    <td><span className={`tag callback-status ${appointment.status}`}>{appointment.status}</span></td>
+                    <td>
+                      <div className="callback-actions">
+                        <a className="secondary-action" href={phoneHref(appointment.phone)}>Call</a>
+                        <button className="secondary-action" onClick={() => downloadAppointment(appointment)} type="button">Calendar</button>
+                        {appointment.status === 'scheduled' ? (
+                          <>
+                            <button className="secondary-action" disabled={working} onClick={() => updateAppointmentStatus(appointment, 'completed')} type="button">Complete</button>
+                            <button className="text-action" disabled={working} onClick={() => updateAppointmentStatus(appointment, 'cancelled')} type="button">Cancel</button>
+                          </>
+                        ) : null}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : <div className="empty-state compact"><h3>No callbacks scheduled</h3><p>Appointments confirmed by the AI receptionist will appear here with the client's requested details.</p></div>}
+      </section>
+
       <section className="panel call-rules-panel">
         <div className="section-heading">
           <p className="eyebrow">Operating controls</p>
@@ -499,11 +610,11 @@ export function CallCenter({ callCenter, prospects, selectedLeadId, onSelectLead
             <input placeholder="Separate mobile or answering line" value={callCenter.settings.transferPhone} onChange={(event) => updateSettings({ transferPhone: event.target.value })} />
           </label>
           <label>
-            Start hour
+            Outbound start hour
             <input max="19" min="8" type="number" value={callCenter.settings.callWindowStart} onChange={(event) => updateSettings({ callWindowStart: Number(event.target.value) })} />
           </label>
           <label>
-            End hour
+            Outbound end hour
             <input max="20" min="9" type="number" value={callCenter.settings.callWindowEnd} onChange={(event) => updateSettings({ callWindowEnd: Number(event.target.value) })} />
           </label>
           <label>
@@ -513,6 +624,33 @@ export function CallCenter({ callCenter, prospects, selectedLeadId, onSelectLead
           <label>
             Time zone
             <input value={callCenter.settings.timeZone} onChange={(event) => updateSettings({ timeZone: event.target.value })} />
+          </label>
+          <label>
+            Callback days
+            <select
+              value={callbackDayPreset(callCenter.settings.callbackDays)}
+              onChange={(event) => {
+                const preset = callbackDayPresets.find((item) => item.value === event.target.value);
+                if (preset) updateSettings({ callbackDays: preset.days });
+              }}
+            >
+              {callbackDayPreset(callCenter.settings.callbackDays) === 'custom' ? <option value="custom">Custom server schedule</option> : null}
+              {callbackDayPresets.map((preset) => <option key={preset.value} value={preset.value}>{preset.label}</option>)}
+            </select>
+          </label>
+          <label>
+            Callback length
+            <select value={callCenter.settings.callbackDurationMinutes} onChange={(event) => updateSettings({ callbackDurationMinutes: Number(event.target.value) })}>
+              {[15, 30, 45, 60].map((minutes) => <option key={minutes} value={minutes}>{minutes} minutes</option>)}
+            </select>
+          </label>
+          <label>
+            Callback start hour
+            <input max="19" min="8" type="number" value={callCenter.settings.callbackWindowStart} onChange={(event) => updateSettings({ callbackWindowStart: Number(event.target.value) })} />
+          </label>
+          <label>
+            Callback end hour
+            <input max="20" min="9" type="number" value={callCenter.settings.callbackWindowEnd} onChange={(event) => updateSettings({ callbackWindowEnd: Number(event.target.value) })} />
           </label>
           <label className="span-two">
             Booking URL

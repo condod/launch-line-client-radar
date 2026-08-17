@@ -1679,6 +1679,7 @@ li {
 .call-service-panel,
 .call-lead-panel,
 .consent-panel,
+.callback-panel,
 .call-rules-panel,
 .call-history-panel {
   min-width: 0;
@@ -1805,6 +1806,86 @@ li {
 .call-history-table td:first-child strong {
   display: block;
   color: var(--navy);
+}
+
+.callback-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.callback-count {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  border: 1px solid #a9dff2;
+  border-radius: 999px;
+  padding: 0.55rem 0.85rem;
+  color: #07586f;
+  background: #ebfaff;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.callback-table th:nth-child(1) { width: 18%; }
+.callback-table th:nth-child(2) { width: 22%; }
+.callback-table th:nth-child(3) { width: 27%; }
+.callback-table th:nth-child(4) { width: 11%; }
+.callback-table th:nth-child(5) { width: 22%; }
+
+.callback-table td strong,
+.callback-table td small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.callback-table td strong {
+  color: var(--navy);
+}
+
+.callback-table td small + small {
+  margin-top: 0.2rem;
+}
+
+.callback-status.scheduled {
+  color: #07586f;
+  background: #e8faff;
+}
+
+.callback-status.completed {
+  color: var(--success);
+  background: #edfdf7;
+}
+
+.callback-status.cancelled {
+  color: var(--slate);
+  background: #edf1f5;
+}
+
+.callback-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.callback-actions .secondary-action,
+.callback-actions .text-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.55rem 0.75rem;
+  text-decoration: none;
+}
+
+.text-action {
+  min-height: 44px;
+  border: 0;
+  padding: 0.55rem 0.75rem;
+  color: var(--danger);
+  background: transparent;
+  font-weight: 800;
 }
 
 .call-rules-actions {
@@ -2057,9 +2138,38 @@ li {
   .call-history-table td:nth-child(5)::before {
     content: "Started";
   }
+
+  .callback-table td:nth-child(1)::before {
+    content: "Appointment";
+  }
+
+  .callback-table td:nth-child(2)::before {
+    content: "Contact";
+  }
+
+  .callback-table td:nth-child(3)::before {
+    content: "Requested outcome";
+  }
+
+  .callback-table td:nth-child(4)::before {
+    content: "Status";
+  }
+
+  .callback-table td:nth-child(5)::before {
+    content: "Actions";
+  }
 }
 
 @media (max-width: 700px) {
+  .callback-heading {
+    display: grid;
+    align-items: start;
+  }
+
+  .callback-count {
+    justify-self: start;
+  }
+
   .brand-block {
     grid-template-columns: minmax(7.5rem, 8.5rem) minmax(0, 1fr);
   }

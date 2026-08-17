@@ -13,6 +13,10 @@ const settings: RuntimeVoiceSettings = {
   agentName: 'Launch Line Assistant',
   transferPhone: '',
   bookingUrl: '',
+  callbackWindowStart: 9,
+  callbackWindowEnd: 18,
+  callbackDays: [1, 2, 3, 4, 5],
+  callbackDurationMinutes: 30,
   aiDisclosure: 'This is an AI assistant.'
 };
 

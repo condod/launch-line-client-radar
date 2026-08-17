@@ -21,7 +21,31 @@ export type RuntimeVoiceSettings = {
   agentName: string;
   transferPhone: string;
   bookingUrl: string;
+  callbackWindowStart: number;
+  callbackWindowEnd: number;
+  callbackDays: number[];
+  callbackDurationMinutes: number;
   aiDisclosure: string;
+};
+
+export type CallbackAppointmentStatus = 'scheduled' | 'completed' | 'cancelled';
+
+export type CallbackAppointment = {
+  id: string;
+  callId: string;
+  prospectId?: string;
+  contactName: string;
+  businessName: string;
+  phone: string;
+  email?: string;
+  scheduledFor: string;
+  timeZone: string;
+  durationMinutes: number;
+  needsSummary: string;
+  details: string;
+  status: CallbackAppointmentStatus;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type ServerCallRecord = {
@@ -38,6 +62,7 @@ export type ServerCallRecord = {
   durationSeconds?: number;
   providerCallSid?: string;
   realtimeCallId?: string;
+  appointmentId?: string;
   summary?: string;
 };
 
@@ -51,10 +76,11 @@ export type CallContext = {
 };
 
 export type CallData = {
-  version: 1;
+  version: 2;
   settings: RuntimeVoiceSettings;
   consents: Record<string, ServerConsentRecord>;
   calls: ServerCallRecord[];
+  appointments: CallbackAppointment[];
   contexts: Record<string, CallContext>;
   handledWebhookIds: string[];
 };

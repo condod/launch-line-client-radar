@@ -44,10 +44,15 @@ export const defaultCallCenter: CallCenterState = {
     timeZone: 'America/New_York',
     maxAiAttempts: 3,
     bookingUrl: '',
+    callbackWindowStart: 9,
+    callbackWindowEnd: 18,
+    callbackDays: [1, 2, 3, 4, 5],
+    callbackDurationMinutes: 30,
     aiDisclosure: "Hi, this is Launch Line Digital's AI assistant calling on behalf of Diesen Enterprise LLC. Is now an okay time for a brief conversation?"
   },
   records: {},
-  history: []
+  history: [],
+  appointments: []
 };
 
 export const createDefaultState = (): AppState => {
@@ -102,7 +107,8 @@ function mergeWithDefaults(state: Partial<AppState>): AppState {
     callCenter: {
       settings: { ...defaults.callCenter.settings, ...rawCallCenter.settings },
       records,
-      history: Array.isArray(rawCallCenter.history) ? rawCallCenter.history.slice(0, 500) : []
+      history: Array.isArray(rawCallCenter.history) ? rawCallCenter.history.slice(0, 500) : [],
+      appointments: Array.isArray(rawCallCenter.appointments) ? rawCallCenter.appointments.slice(0, 500) : []
     },
     updatedAt: typeof state.updatedAt === 'string' ? state.updatedAt : defaults.updatedAt
   };

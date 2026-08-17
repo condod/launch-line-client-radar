@@ -1,4 +1,5 @@
 import WebSocket from 'ws';
+import { scheduleCallback } from './appointments.js';
 import { buildRealtimePrompt, realtimeTools } from './prompts.js';
 import type { CallContext, VoiceConfig } from './types.js';
 import { CallStore } from './store.js';
@@ -41,7 +42,7 @@ async function handleToolCall(
 ): Promise<void> {
   const name = event.name ?? '';
   const toolCallId = event.call_id;
-  if (!toolCallId || !['mark_do_not_call', 'transfer_to_owner', 'save_call_note'].includes(name)) return;
+  if (!toolCallId || !['mark_do_not_call', 'transfer_to_owner', 'save_call_note', 'schedule_callback'].includes(name)) return;
   let args: Record<string, unknown> = {};
   try {
     if ((event.arguments?.length ?? 0) > 10_000) throw new Error('Tool arguments were too large.');
@@ -88,6 +89,18 @@ async function handleToolCall(
     const summary = String(args.summary || '').slice(0, 1000);
     await updateCurrentCall(store, context, { status: outcome, summary });
     result = { ok: true, action: 'note_saved' };
+  } else if (name === 'schedule_callback') {
+    const scheduled = await store.update((data) => scheduleCallback(data, context, args));
+    result = scheduled.ok
+      ? {
+          ok: true,
+          action: 'callback_scheduled',
+          appointment_id: scheduled.appointment.id,
+          scheduled_for: scheduled.appointment.scheduledFor,
+          time_zone: scheduled.appointment.timeZone,
+          confirmation: scheduled.confirmation
+        }
+      : scheduled;
   }
 
   if (ws.readyState === WebSocket.OPEN) {

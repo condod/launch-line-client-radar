@@ -6,6 +6,7 @@ Client Radar is a prospect research and human-controlled sales tool. It is desig
 - Do not scrape Google Maps HTML pages.
 - Crawl only a business's own public website when a website URL is returned or imported.
 - Do not collect private personal data.
+- For requested callbacks, collect only the contact name, confirmed callback number, optional business email, appointment time, and business needs needed for the follow-up. Do not use the appointment notes for sensitive personal information, and delete stale records under a documented retention policy.
 - Do not treat a public business listing or published phone number as consent to receive an artificial-voice call.
 - AI outbound calls require a human approval click plus a server-side written-consent record for the exact number.
 - Keep the configured calling window within 8:00 a.m.-8:00 p.m. local time and wait at least 24 hours between automated attempts.

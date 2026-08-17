@@ -44,6 +44,10 @@ export function defaultRuntimeSettings(config: VoiceConfig): RuntimeVoiceSetting
     agentName: 'Launch Line Assistant',
     transferPhone: config.humanTransferPhone,
     bookingUrl: '',
+    callbackWindowStart: 9,
+    callbackWindowEnd: 18,
+    callbackDays: [1, 2, 3, 4, 5],
+    callbackDurationMinutes: 30,
     aiDisclosure: "Hi, this is Launch Line Digital's AI assistant calling on behalf of Diesen Enterprise LLC. Is now an okay time for a brief conversation?"
   };
 }

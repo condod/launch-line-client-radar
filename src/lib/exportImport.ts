@@ -41,7 +41,8 @@ export function parseImportedState(raw: string): { ok: true; state: AppState } |
         callCenter: {
           settings: { ...defaults.callCenter.settings, ...state.callCenter?.settings },
           records: state.callCenter?.records && typeof state.callCenter.records === 'object' ? state.callCenter.records : {},
-          history: Array.isArray(state.callCenter?.history) ? state.callCenter.history.slice(0, 500) : []
+          history: Array.isArray(state.callCenter?.history) ? state.callCenter.history.slice(0, 500) : [],
+          appointments: Array.isArray(state.callCenter?.appointments) ? state.callCenter.appointments.slice(0, 500) : []
         },
         updatedAt: new Date().toISOString()
       }

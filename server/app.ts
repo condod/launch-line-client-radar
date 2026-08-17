@@ -2,11 +2,12 @@ import { randomUUID, timingSafeEqual } from 'node:crypto';
 import express, { type NextFunction, type Request, type Response } from 'express';
 import OpenAI from 'openai';
 import twilio from 'twilio';
+import { setCallbackStatus } from './appointments.js';
 import { configurationStatus, defaultRuntimeSettings } from './config.js';
 import { evaluateAiOutbound, normalizeE164, safeIdentifier } from './policy.js';
 import { acceptRealtimeCall, rejectRealtimeCall } from './realtime.js';
 import { CallStore } from './store.js';
-import type { CallContext, ConsentStatus, RuntimeVoiceSettings, ServerCallRecord, ServerConsentRecord, VoiceConfig } from './types.js';
+import type { CallbackAppointmentStatus, CallContext, ConsentStatus, RuntimeVoiceSettings, ServerCallRecord, ServerConsentRecord, VoiceConfig } from './types.js';
 
 type IncomingRealtimeEvent = {
   id: string;
@@ -74,6 +75,9 @@ function validTimeZone(value: string): boolean {
 
 function settingsFromBody(body: Record<string, unknown>, current: RuntimeVoiceSettings, config: VoiceConfig): RuntimeVoiceSettings | null {
   const transferInput = String(body.transferPhone ?? '').trim();
+  const callbackDays = Array.isArray(body.callbackDays)
+    ? [...new Set(body.callbackDays.map(Number).filter((day) => Number.isInteger(day) && day >= 0 && day <= 6))]
+    : [];
   const next: RuntimeVoiceSettings = {
     receptionistEnabled: body.receptionistEnabled === true,
     aiOutboundEnabled: body.aiOutboundEnabled === true,
@@ -84,11 +88,18 @@ function settingsFromBody(body: Record<string, unknown>, current: RuntimeVoiceSe
     agentName: String(body.agentName ?? '').trim().slice(0, 80),
     transferPhone: transferInput ? normalizeE164(transferInput) ?? '' : '',
     bookingUrl: String(body.bookingUrl ?? '').trim().slice(0, 500),
+    callbackWindowStart: Number(body.callbackWindowStart),
+    callbackWindowEnd: Number(body.callbackWindowEnd),
+    callbackDays,
+    callbackDurationMinutes: Number(body.callbackDurationMinutes),
     aiDisclosure: String(body.aiDisclosure ?? '').trim().slice(0, 500)
   };
   if (!Number.isInteger(next.callWindowStart) || next.callWindowStart < 8 || next.callWindowStart > 19) return null;
   if (!Number.isInteger(next.callWindowEnd) || next.callWindowEnd < 9 || next.callWindowEnd > 20 || next.callWindowStart >= next.callWindowEnd) return null;
   if (!Number.isInteger(next.maxAiAttempts) || next.maxAiAttempts < 1 || next.maxAiAttempts > 3) return null;
+  if (!Number.isInteger(next.callbackWindowStart) || next.callbackWindowStart < 8 || next.callbackWindowStart > 19) return null;
+  if (!Number.isInteger(next.callbackWindowEnd) || next.callbackWindowEnd < 9 || next.callbackWindowEnd > 20 || next.callbackWindowStart >= next.callbackWindowEnd) return null;
+  if (!next.callbackDays.length || ![15, 30, 45, 60].includes(next.callbackDurationMinutes)) return null;
   if (!validTimeZone(next.timeZone) || !next.agentName || !/\bAI\b/i.test(next.aiDisclosure)) return null;
   if (transferInput && !next.transferPhone) return null;
   if (next.transferPhone && [config.businessPhone, config.twilioPhoneNumber].includes(next.transferPhone)) return null;
@@ -191,7 +202,13 @@ export function createVoiceApp(config: VoiceConfig, store = new CallStore(config
 
   app.get('/api/health', async (_req, res) => {
     const data = await store.read();
-    res.json({ ok: true, configured: configurationStatus(config), businessPhone: config.businessPhone, receptionistEnabled: data.settings.receptionistEnabled });
+    res.json({
+      ok: true,
+      configured: configurationStatus(config),
+      businessPhone: config.businessPhone,
+      receptionistEnabled: data.settings.receptionistEnabled,
+      scheduledCallbacks: data.appointments.filter((appointment) => appointment.status === 'scheduled').length
+    });
   });
 
   app.get('/api/settings', dashboardAuth, async (_req, res) => {
@@ -202,7 +219,7 @@ export function createVoiceApp(config: VoiceConfig, store = new CallStore(config
     const data = await store.read();
     const settings = settingsFromBody(req.body as Record<string, unknown>, data.settings, config);
     if (!settings) {
-      res.status(400).json({ error: 'Voice settings are invalid. Keep calling hours within 8:00-20:00, attempts at 1-3, and an explicit AI disclosure. Any transfer number must be valid and different from the AI business line.' });
+      res.status(400).json({ error: 'Voice settings are invalid. Keep calling and callback hours within 8:00-20:00, select callback days and a 15-60 minute duration, keep attempts at 1-3, and include an explicit AI disclosure. Any transfer number must be valid and different from the AI business line.' });
       return;
     }
     await store.update((draft) => { draft.settings = settings; });
@@ -229,6 +246,26 @@ export function createVoiceApp(config: VoiceConfig, store = new CallStore(config
         return publicCall;
       });
     res.json({ calls });
+  });
+
+  app.get('/api/appointments', dashboardAuth, async (_req, res) => {
+    const appointments = [...(await store.read()).appointments].sort((a, b) => a.scheduledFor.localeCompare(b.scheduledFor));
+    res.json({ appointments });
+  });
+
+  app.post('/api/appointments/:appointmentId/status', dashboardAuth, async (req, res) => {
+    const appointmentId = safeIdentifier(req.params.appointmentId);
+    const status = String((req.body as Record<string, unknown>).status ?? '') as CallbackAppointmentStatus;
+    if (!appointmentId || !['scheduled', 'completed', 'cancelled'].includes(status)) {
+      res.status(400).json({ error: 'A valid appointment and status are required.' });
+      return;
+    }
+    const appointment = await store.update((data) => setCallbackStatus(data, appointmentId, status));
+    if (!appointment) {
+      res.status(404).json({ error: 'Callback appointment was not found.' });
+      return;
+    }
+    res.json({ ok: true, appointment });
   });
 
   app.post('/api/calls/outbound-ai', dashboardAuth, async (req, res) => {

@@ -1,4 +1,4 @@
-import type { CallCenterSettings, CallConsentRecord, ProspectCallRecord, ProspectRecord } from '../types';
+import type { CallbackAppointment, CallCenterSettings, CallConsentRecord, ProspectCallRecord, ProspectRecord } from '../types';
 
 const MIN_AI_RETRY_HOURS = 24;
 
@@ -89,3 +89,36 @@ export function canStartAiCall(
   return { allowed: true, reason: 'Consent and calling-window checks passed.' };
 }
 
+function calendarTimestamp(value: string): string {
+  return new Date(value).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+}
+
+function calendarText(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
+}
+
+export function callbackCalendarContents(appointment: CallbackAppointment): string {
+  const end = new Date(new Date(appointment.scheduledFor).getTime() + appointment.durationMinutes * 60_000).toISOString();
+  const description = [
+    appointment.needsSummary,
+    appointment.details,
+    `Callback: ${appointment.phone}`,
+    appointment.email ? `Email: ${appointment.email}` : ''
+  ].filter(Boolean).join('\n');
+  return [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Launch Line Digital//Client Radar//EN',
+    'CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT',
+    `UID:${calendarText(appointment.id)}@launchline.digital`,
+    `DTSTAMP:${calendarTimestamp(appointment.createdAt)}`,
+    `DTSTART:${calendarTimestamp(appointment.scheduledFor)}`,
+    `DTEND:${calendarTimestamp(end)}`,
+    `SUMMARY:${calendarText(`Launch Line callback - ${appointment.businessName}`)}`,
+    `DESCRIPTION:${calendarText(description)}`,
+    'END:VEVENT',
+    'END:VCALENDAR',
+    ''
+  ].join('\r\n');
+}

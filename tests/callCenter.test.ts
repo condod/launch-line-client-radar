@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { canStartAiCall, createProspectCallRecord, normalizePhoneToE164 } from '../src/lib/callCenter';
+import { callbackCalendarContents, canStartAiCall, createProspectCallRecord, normalizePhoneToE164 } from '../src/lib/callCenter';
+import type { CallbackAppointment } from '../src/types';
 import { createDefaultState } from '../src/lib/storage';
 
 test('normalizes common US phone formats to E.164', () => {
@@ -57,4 +58,27 @@ test('blocks rapid retries and do-not-call records', () => {
     canStartAiCall(lead, { ...base, consent: { ...base.consent, status: 'do_not_call' } }, settings, new Date('2026-08-18T14:00:00-04:00')).reason,
     /do-not-call/i
   );
+});
+
+test('creates an importable calendar event for a scheduled callback', () => {
+  const appointment: CallbackAppointment = {
+    id: 'appointment-1',
+    callId: 'call-1',
+    contactName: 'Jordan Smith',
+    businessName: 'Fictional Gulf Services',
+    phone: '+19415550199',
+    scheduledFor: '2026-08-18T18:00:00.000Z',
+    timeZone: 'America/New_York',
+    durationMinutes: 30,
+    needsSummary: 'Discuss lead follow-up automation.',
+    details: 'Needs missed-call response and quote intake.',
+    status: 'scheduled',
+    createdAt: '2026-08-17T14:00:00.000Z',
+    updatedAt: '2026-08-17T14:00:00.000Z'
+  };
+  const calendar = callbackCalendarContents(appointment);
+  assert.match(calendar, /BEGIN:VCALENDAR/);
+  assert.match(calendar, /DTSTART:20260818T180000Z/);
+  assert.match(calendar, /DTEND:20260818T183000Z/);
+  assert.match(calendar, /Launch Line callback - Fictional Gulf Services/);
 });

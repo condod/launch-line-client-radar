@@ -31,6 +31,11 @@ try {
     headers: { Authorization: 'Bearer smoke-test-key' }
   });
   if (!authorized.ok) throw new Error('Voice control endpoint rejected valid authentication.');
+  const appointments = await fetch(`http://127.0.0.1:${address.port}/api/appointments`, {
+    headers: { Authorization: 'Bearer smoke-test-key' }
+  });
+  const appointmentBody = await appointments.json() as { appointments?: unknown[] };
+  if (!appointments.ok || !Array.isArray(appointmentBody.appointments)) throw new Error('Callback appointment endpoint was invalid.');
   console.log('Voice service smoke check passed.');
 } finally {
   await new Promise<void>((resolve) => server.close(() => resolve()));

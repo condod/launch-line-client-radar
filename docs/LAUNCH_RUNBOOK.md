@@ -10,7 +10,7 @@ Launch Line Client Radar is ready to run as a local-first prospecting product. I
 4. Audit the selected lead's owned website evidence.
 5. Move qualified leads through the Pipeline Board.
 6. Use Offer Builder for proposal text and Outreach Pack for manually reviewed copy.
-7. Use Call Center for human click-to-call or consent-qualified AI calls; never mark consent as written without retaining the source evidence.
+7. Use Call Center for human click-to-call or consent-qualified AI calls; never mark consent as written without retaining the source evidence. Review scheduled callbacks daily, add them to the human calendar, and mark completed or cancelled outcomes.
 8. Export CSV for spreadsheets and JSON for full local backup.
 
 ## Local Commands
