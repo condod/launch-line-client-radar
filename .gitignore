@@ -1,0 +1,11 @@
+node_modules/
+.vite/
+.env
+.env.local
+*.log
+npm-debug.log*
+dist/
+standalone.html
+exports/
+.tmp-chrome*/
+qa-*.png

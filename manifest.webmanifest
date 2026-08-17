@@ -1,0 +1,17 @@
+{
+  "name": "Launch Line Client Radar",
+  "short_name": "Client Radar",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#F4FAFF",
+  "theme_color": "#071A3E",
+  "description": "Offline-first prospect research dashboard for local website-first lead scoring.",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

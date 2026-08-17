@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Launch Line Client Radar">
+  <rect width="512" height="512" rx="96" fill="#071a3e" />
+  <path d="M96 352h320" stroke="#37c9ff" stroke-width="28" stroke-linecap="round" />
+  <path d="M128 304 224 176l64 80 96-112" fill="none" stroke="#ffffff" stroke-width="32" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="384" cy="144" r="38" fill="#1266f1" stroke="#ffffff" stroke-width="18" />
+  <text x="96" y="424" fill="#ffffff" font-family="Arial, sans-serif" font-size="64" font-weight="800">LL</text>
+</svg>
