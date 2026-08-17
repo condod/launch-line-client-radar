@@ -1,0 +1,34 @@
+{
+  "name": "launch-line-client-radar",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "lint": "eslint . --max-warnings=0",
+    "preview": "vite preview --host 127.0.0.1",
+    "export:standalone": "npm run build && node scripts/export-standalone.mjs",
+    "test": "tsx --test tests/*.test.ts",
+    "seed": "tsx scripts/seedDemoData.ts",
+    "collect": "tsx scripts/collectPlaces.ts",
+    "audit": "tsx scripts/auditWebsite.ts",
+    "score": "tsx scripts/scoreProspects.ts",
+    "export": "tsx scripts/exportCSV.ts"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^5.2.0",
+    "eslint": "^9.39.1",
+    "typescript-eslint": "^8.46.4",
+    "tsx": "^4.19.2",
+    "typescript": "^6.0.3",
+    "vite": "^7.3.3"
+  }
+}
