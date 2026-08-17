@@ -10,8 +10,8 @@ export default defineConfig({
     modulePreload: false,
     rollupOptions: {
       output: {
-        entryFileNames: 'assets/app.js',
-        assetFileNames: 'assets/[name][extname]'
+        entryFileNames: 'assets/app-[hash].js',
+        assetFileNames: 'assets/[name]-[hash][extname]'
       }
     }
   }
