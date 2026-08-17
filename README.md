@@ -2,6 +2,8 @@
 
 Local-first prospect research and sales workflow for Diesen Enterprise LLC / Launch Line Digital. The app scores local businesses by visible website, Google, review, scheduling, and workflow leakage, then produces a package recommendation, pipeline stage, outreach copy, and proposal draft.
 
+Live app: https://condod.github.io/launch-line-client-radar/
+
 ## Product Surfaces
 
 - Dashboard with KPI cards, opportunity mix, and dependency-free territory map.
