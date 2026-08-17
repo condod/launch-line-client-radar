@@ -1,5 +1,5 @@
-const CACHE_NAME = 'launch-line-client-radar-v2';
-const SHELL_ASSETS = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
+const CACHE_NAME = 'launch-line-client-radar-v3';
+const SHELL_ASSETS = ['./', './index.html', './manifest.webmanifest', './launch-line-digital.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
