@@ -5,6 +5,8 @@ node_modules/
 *.log
 npm-debug.log*
 dist/
+server-dist/
+server-data/
 standalone.html
 exports/
 .tmp-chrome*/

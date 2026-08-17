@@ -12,6 +12,7 @@ Live app: https://condod.github.io/launch-line-client-radar/
 - Audit Workspace with evidence toggles, instant radar rescoring, and a persisted 0-10 weighted sales scorecard.
 - Playbooks with vertical pain points, objections, and rebuttals.
 - Offer Builder with 10 selectable automation-first products, one-time setup pricing, software-cost disclosure, and client-ready proposal text.
+- Call Center with human click-to-call, documented consent, approval-gated AI outbound calls, inbound AI receptionist controls, and call history.
 - Export Center with JSON backup/restore, CSV exports, print summary, and operator commands.
 - Settings with business identity, contact info, proposal defaults, optional care-plan floor, and launch checklist.
 
@@ -28,17 +29,9 @@ Open the local URL printed by Vite. If another app is already using the default 
 
 ## Environment
 
-Create `.env` with:
+Copy `.env.example` to `.env`. The first section controls optional prospect collection; the secure voice section controls the separately hosted Twilio/OpenAI service.
 
-```text
-GOOGLE_PLACES_API_KEY=
-PAGESPEED_API_KEY=
-OPENAI_API_KEY=
-DEFAULT_CITY=Sarasota, FL
-DEFAULT_RADIUS_MILES=25
-```
-
-`GOOGLE_PLACES_API_KEY` is required only for live Places collection. `PAGESPEED_API_KEY` and `OPENAI_API_KEY` are optional future upgrade hooks.
+`GOOGLE_PLACES_API_KEY` is required only for live Places collection. Voice credentials are required only by the secure Node service and must never be exposed through `VITE_` variables or committed to Git.
 
 ## Scripts
 
@@ -52,6 +45,8 @@ npm.cmd run lint
 npm.cmd run test
 npm.cmd run build
 npm.cmd run export:standalone
+npm.cmd run server:dev
+npm.cmd run server:smoke
 ```
 
 - `seed` creates 50 clearly marked fictional demo leads.
@@ -60,6 +55,8 @@ npm.cmd run export:standalone
 - `score` applies the deterministic scoring model.
 - `export` writes `exports/prospects.csv`.
 - `export:standalone` creates `standalone.html` with inline CSS/JS for file transfer.
+- `server:dev` starts the Twilio/OpenAI voice service on port 8787 by default.
+- `server:smoke` starts an isolated local service and verifies its health endpoint without making a phone call.
 
 ## Launch Modes
 
@@ -67,13 +64,15 @@ npm.cmd run export:standalone
 - iPad demo: transfer `standalone.html` or host the built `dist/` folder on a local/static server.
 - Sell as a service: deliver scored lead lists, manual audits, package recommendations, and proposal drafts.
 - Sell as a tool: host `dist/` behind your preferred access control and provide support terms.
+- Voice operation: deploy the Node service separately, connect it from the Call Center tab, and keep its access key session-only.
 
 ## Compliance Boundaries
 
 - Do not scrape Google Maps web pages.
 - Do not collect private personal emails.
-- Do not auto-send outreach.
+- Never place an AI outbound call without documented written consent for the exact number and a human approval click.
+- Honor do-not-call requests immediately; the voice agent also has a server-side suppression tool.
 - Do not claim guaranteed rankings, reviews, revenue, or lead volume.
 - Review repair means compliant request timing, response workflows, consistent review links, customer-service fixes, and reporting.
 
-See `docs/LAUNCH_RUNBOOK.md`, `docs/SALES_OFFER.md`, `docs/PRICING_CATALOG.md`, `docs/SCORING_MODEL.md`, `docs/OUTREACH_PLAYBOOK.md`, and `docs/COMPLIANCE_NOTES.md` for operating details.
+See `docs/VOICE_SETUP.md`, `docs/LAUNCH_RUNBOOK.md`, `docs/SALES_OFFER.md`, `docs/PRICING_CATALOG.md`, `docs/SCORING_MODEL.md`, `docs/OUTREACH_PLAYBOOK.md`, and `docs/COMPLIANCE_NOTES.md` for operating details.

@@ -12,7 +12,7 @@ const launchChecklist = [
   'Run Places collection only with the official API key.',
   'Audit owned websites before making claims in outreach.',
   'Export a JSON backup at the end of each work session.',
-  'Use manual review for every call, email, SMS, or social message.',
+  'Human-review every call; AI outbound also requires written consent for the exact number.',
   'Avoid guarantees about rankings, review outcomes, or revenue.'
 ];
 

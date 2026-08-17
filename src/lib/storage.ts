@@ -1,5 +1,5 @@
 import demoProspects from '../data/demoProspects.json';
-import type { AppSettings, AppState, ProspectRecord, RadarFilters } from '../types';
+import type { AppSettings, AppState, CallCenterState, ProspectCallRecord, ProspectRecord, RadarFilters } from '../types';
 import { normalizeProspect } from './prospectFactory';
 
 const STORAGE_KEY = 'launch-line-client-radar-state-v1';
@@ -31,6 +31,25 @@ export const defaultSettings: AppSettings = {
   complianceFooter: 'Prepared for manual review. No rankings, revenue, or review outcomes are guaranteed.'
 };
 
+export const defaultCallCenter: CallCenterState = {
+  settings: {
+    serviceBaseUrl: '',
+    businessPhone: '+19417803258',
+    transferPhone: '+19417352514',
+    agentName: 'Launch Line Assistant',
+    receptionistEnabled: true,
+    aiOutboundEnabled: false,
+    callWindowStart: 8,
+    callWindowEnd: 20,
+    timeZone: 'America/New_York',
+    maxAiAttempts: 3,
+    bookingUrl: '',
+    aiDisclosure: "Hi, this is Launch Line Digital's AI assistant calling on behalf of Diesen Enterprise LLC. Is now an okay time for a brief conversation?"
+  },
+  records: {},
+  history: []
+};
+
 export const createDefaultState = (): AppState => {
   const prospects = (demoProspects as ProspectRecord[])
     .map((lead, index) => normalizeProspect(lead, index))
@@ -40,6 +59,7 @@ export const createDefaultState = (): AppState => {
   filters: defaultFilters,
   selectedLeadId: prospects[0]?.place_id || '',
   settings: defaultSettings,
+  callCenter: defaultCallCenter,
   updatedAt: new Date().toISOString()
   };
 };
@@ -67,12 +87,23 @@ function mergeWithDefaults(state: Partial<AppState>): AppState {
     : defaults.prospects;
   const settings = { ...defaults.settings, ...state.settings };
   if (settings.monthlyReportingRetainer === 250) settings.monthlyReportingRetainer = defaults.settings.monthlyReportingRetainer;
+  const rawCallCenter = state.callCenter && typeof state.callCenter === 'object' ? state.callCenter : defaults.callCenter;
+  const records = rawCallCenter.records && typeof rawCallCenter.records === 'object'
+    ? Object.fromEntries(
+        Object.entries(rawCallCenter.records).filter((entry): entry is [string, ProspectCallRecord] => Boolean(entry[1] && typeof entry[1] === 'object'))
+      )
+    : {};
 
   return {
     prospects: prospects.length ? prospects : defaults.prospects,
     filters: { ...defaults.filters, ...state.filters },
     selectedLeadId: typeof state.selectedLeadId === 'string' ? state.selectedLeadId : defaults.selectedLeadId,
     settings,
+    callCenter: {
+      settings: { ...defaults.callCenter.settings, ...rawCallCenter.settings },
+      records,
+      history: Array.isArray(rawCallCenter.history) ? rawCallCenter.history.slice(0, 500) : []
+    },
     updatedAt: typeof state.updatedAt === 'string' ? state.updatedAt : defaults.updatedAt
   };
 }

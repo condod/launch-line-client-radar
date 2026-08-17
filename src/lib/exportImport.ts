@@ -38,6 +38,11 @@ export function parseImportedState(raw: string): { ok: true; state: AppState } |
         filters: { ...defaults.filters, ...state.filters },
         selectedLeadId: prospects.some((lead) => lead.place_id === state.selectedLeadId) ? String(state.selectedLeadId) : prospects[0].place_id,
         settings: { ...defaults.settings, ...state.settings },
+        callCenter: {
+          settings: { ...defaults.callCenter.settings, ...state.callCenter?.settings },
+          records: state.callCenter?.records && typeof state.callCenter.records === 'object' ? state.callCenter.records : {},
+          history: Array.isArray(state.callCenter?.history) ? state.callCenter.history.slice(0, 500) : []
+        },
         updatedAt: new Date().toISOString()
       }
     };

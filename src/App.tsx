@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AppShell } from './components/AppShell';
 import { AuditWorkspace } from './components/AuditWorkspace';
+import { CallCenter } from './components/CallCenter';
 import { HeroPanel } from './components/HeroPanel';
 import { MetricCard } from './components/MetricCard';
 import { OfferBuilder } from './components/OfferBuilder';
@@ -14,7 +15,7 @@ import { PIPELINE_STAGES } from './lib/pipeline';
 import { rescoreProspect, updateProspectAudit, updateProspectGuideAudit } from './lib/prospectFactory';
 import { createDefaultState, localStorageAdapter } from './lib/storage';
 import { websiteStatusFromUrl } from './lib/radarScoring';
-import type { AppSettings, AppState, AuditCriterionKey, NavigationTab, PipelineStatus, ProspectRecord, WebsiteAudit } from './types';
+import type { AppSettings, AppState, AuditCriterionKey, CallCenterState, NavigationTab, PipelineStatus, ProspectRecord, WebsiteAudit } from './types';
 
 const websiteStatuses = ['missing', 'facebook_only', 'social_only', 'marketplace_only', 'exists', 'unreachable', 'broken_ssl', 'redirects'];
 
@@ -183,6 +184,10 @@ function App() {
     updateState({ ...state, settings: { ...state.settings, ...patch } });
   }
 
+  function updateCallCenter(callCenter: CallCenterState) {
+    updateState({ ...state, callCenter });
+  }
+
   function exportJson(leads = state.prospects) {
     const payload = serializeAppState({ ...state, prospects: leads });
     setImportText(payload);
@@ -287,7 +292,7 @@ function App() {
           </div>
           <div className="launch-strip-items">
             <span>Offline demo export</span>
-            <span>Manual outreach only</span>
+            <span>Consent-gated AI calls</span>
             <span>JSON backup/restore</span>
             <span>Configurable proposals</span>
           </div>
@@ -664,6 +669,17 @@ function App() {
         {renderOutreachBlock()}
       </div>
     ),
+    calls: () => (
+      <CallCenter
+        callCenter={state.callCenter}
+        onSelectLead={(id) => selectLead(id)}
+        onStatus={setStatus}
+        onUpdateCallCenter={updateCallCenter}
+        onUpdateLead={updateLead}
+        prospects={state.prospects}
+        selectedLeadId={state.selectedLeadId}
+      />
+    ),
     export: renderExportCenter,
     settings: () => <SettingsPanel settings={state.settings} prospectCount={state.prospects.length} onResetDemoData={resetDemoData} onUpdateSettings={updateSettings} />
   }[activeTab]();
@@ -693,6 +709,7 @@ function tabFromHash(): NavigationTab | null {
     value === 'audit' ||
     value === 'research' ||
     value === 'offer' ||
+    value === 'calls' ||
     value === 'export' ||
     value === 'settings'
   ) {

@@ -10,7 +10,8 @@ Launch Line Client Radar is ready to run as a local-first prospecting product. I
 4. Audit the selected lead's owned website evidence.
 5. Move qualified leads through the Pipeline Board.
 6. Use Offer Builder for proposal text and Outreach Pack for manually reviewed copy.
-7. Export CSV for spreadsheets and JSON for full local backup.
+7. Use Call Center for human click-to-call or consent-qualified AI calls; never mark consent as written without retaining the source evidence.
+8. Export CSV for spreadsheets and JSON for full local backup.
 
 ## Local Commands
 
@@ -20,6 +21,7 @@ npm.cmd run seed
 npm.cmd run dev
 npm.cmd run build
 npm.cmd run export:standalone
+npm.cmd run server:smoke
 ```
 
 ## Live Data Commands
@@ -40,10 +42,11 @@ npm.cmd run export
 - Demo use: transfer `standalone.html` to an iPad or host the built `dist/` folder.
 - Managed service: collect, audit, score, and deliver CSV plus proposals as part of a manual research engagement.
 - Productized tool: host `dist/` behind a private login or static host and sell access with clear support terms.
+- Voice service: deploy `server-dist/` through the included `render.yaml` or another persistent Node host, then follow `docs/VOICE_SETUP.md`.
 
 ## Support Boundaries
 
-- No automated sending.
+- No autonomous outbound AI calling without written consent and a human approval click.
 - No private personal data collection.
 - No guaranteed Google ranking, review volume, or revenue claims.
 - Review workflows must use compliant request timing and honest customer-service follow-up.

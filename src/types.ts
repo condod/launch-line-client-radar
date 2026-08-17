@@ -197,15 +197,75 @@ export type AppSettings = {
   complianceFooter: string;
 };
 
+export type CallConsentStatus = 'unknown' | 'requested' | 'written' | 'denied' | 'do_not_call';
+
+export type CallConsentRecord = {
+  status: CallConsentStatus;
+  source: string;
+  evidenceNote: string;
+  capturedAt?: string;
+  updatedAt: string;
+};
+
+export type ProspectCallRecord = {
+  prospectId: string;
+  consent: CallConsentRecord;
+  aiAttempts: number;
+  lastAttemptAt?: string;
+  lastOutcome?: string;
+  nextFollowUpAt?: string;
+  notes: string;
+};
+
+export type CallDirection = 'inbound' | 'outbound';
+export type CallMode = 'human' | 'ai';
+
+export type CallHistoryItem = {
+  id: string;
+  prospectId?: string;
+  businessName: string;
+  phone: string;
+  direction: CallDirection;
+  mode: CallMode;
+  status: string;
+  startedAt: string;
+  updatedAt: string;
+  durationSeconds?: number;
+  providerCallSid?: string;
+  summary?: string;
+};
+
+export type CallCenterSettings = {
+  serviceBaseUrl: string;
+  businessPhone: string;
+  transferPhone: string;
+  agentName: string;
+  receptionistEnabled: boolean;
+  aiOutboundEnabled: boolean;
+  callWindowStart: number;
+  callWindowEnd: number;
+  timeZone: string;
+  maxAiAttempts: number;
+  bookingUrl: string;
+  aiDisclosure: string;
+};
+
+export type CallCenterState = {
+  settings: CallCenterSettings;
+  records: Record<string, ProspectCallRecord>;
+  history: CallHistoryItem[];
+};
+
 export type AppState = {
   prospects: ProspectRecord[];
   filters: RadarFilters;
   selectedLeadId: string;
   settings: AppSettings;
+  callCenter: CallCenterState;
   updatedAt: string;
 };
 
-export type NavigationTab = 'dashboard' | 'prospects' | 'pipeline' | 'audit' | 'research' | 'offer' | 'export' | 'settings';
+export type NavigationTab = 'dashboard' | 'prospects' | 'pipeline' | 'audit' | 'research' | 'offer' | 'calls' | 'export' | 'settings';
 
 export type ManualProspectInput = {
   businessName: string;

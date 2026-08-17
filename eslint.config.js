@@ -3,7 +3,7 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['.tmp-chrome*/**', 'dist/**', 'node_modules/**', 'standalone.html', 'data/**', 'exports/**', 'qa-*.png']
+    ignores: ['.tmp-chrome*/**', 'dist/**', 'server-dist/**', 'server-data/**', 'node_modules/**', 'standalone.html', 'data/**', 'exports/**', 'qa-*.png']
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
@@ -22,6 +22,15 @@ export default tseslint.config(
     }
   },
   {
+    files: ['scripts/qa-call-center.mjs'],
+    languageOptions: {
+      globals: {
+        document: 'readonly',
+        getComputedStyle: 'readonly'
+      }
+    }
+  },
+  {
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       globals: {
@@ -35,7 +44,7 @@ export default tseslint.config(
         window: 'readonly'
       },
       parserOptions: {
-        projectService: true,
+        project: ['./tsconfig.json', './tsconfig.server.json'],
         tsconfigRootDir: import.meta.dirname
       }
     },

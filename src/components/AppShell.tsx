@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import type { NavigationTab } from '../types';
 
 type NavItem = {
@@ -14,6 +14,7 @@ const navItems: NavItem[] = [
   { id: 'audit', label: 'Audit Workspace', shortLabel: 'Audit' },
   { id: 'research', label: 'Playbooks', shortLabel: 'Plays' },
   { id: 'offer', label: 'Offer Builder', shortLabel: 'Offer' },
+  { id: 'calls', label: 'Call Center', shortLabel: 'Calls' },
   { id: 'export', label: 'Export Center', shortLabel: 'Export' },
   { id: 'settings', label: 'Settings', shortLabel: 'Setup' }
 ];
@@ -29,8 +30,13 @@ type AppShellProps = {
 };
 
 export function AppShell({ activeTab, businessName, guideTitle, ownerEmail, ownerPhone, onTabChange, children }: AppShellProps) {
+  const activeBottomItem = useRef<HTMLButtonElement>(null);
   const phoneDigits = ownerPhone.replace(/\D/g, '');
   const phoneHref = phoneDigits.length === 10 ? `tel:+1${phoneDigits}` : `tel:${phoneDigits}`;
+
+  useEffect(() => {
+    activeBottomItem.current?.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'center' });
+  }, [activeTab]);
 
   return (
     <div className="app-shell">
@@ -76,6 +82,7 @@ export function AppShell({ activeTab, businessName, guideTitle, ownerEmail, owne
             className={activeTab === item.id ? 'bottom-nav-item active' : 'bottom-nav-item'}
             key={item.id}
             onClick={() => onTabChange(item.id)}
+            ref={activeTab === item.id ? activeBottomItem : undefined}
             type="button"
           >
             {item.shortLabel}

@@ -5,10 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "tsc --noEmit && vite build",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "tsc --noEmit && vite build",
+    "build:server": "tsc -p tsconfig.server.json",
     "lint": "eslint . --max-warnings=0",
     "preview": "vite preview --host 127.0.0.1",
     "export:standalone": "npm run build && node scripts/export-standalone.mjs",
+    "server:dev": "tsx watch server/index.ts",
+    "server:start": "node server-dist/index.js",
+    "server:smoke": "tsx server/smoke.ts",
+    "qa:browser": "node scripts/qa-call-center.mjs",
     "test": "tsx --test tests/*.test.ts",
     "seed": "tsx scripts/seedDemoData.ts",
     "collect": "tsx scripts/collectPlaces.ts",
@@ -17,18 +23,25 @@
     "export": "tsx scripts/exportCSV.ts"
   },
   "dependencies": {
+    "express": "^5.2.1",
+    "openai": "^7.5.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "twilio": "^6.1.0",
+    "ws": "^8.21.3"
   },
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "@types/node": "^22.9.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
+    "@types/ws": "^8.18.1",
     "@vitejs/plugin-react": "^5.2.0",
     "eslint": "^9.39.1",
-    "typescript-eslint": "^8.46.4",
+    "playwright-core": "^1.62.1",
     "tsx": "^4.19.2",
     "typescript": "^6.0.3",
+    "typescript-eslint": "^8.46.4",
     "vite": "^7.3.3"
   }
 }
