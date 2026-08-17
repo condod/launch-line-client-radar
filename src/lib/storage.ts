@@ -27,7 +27,7 @@ export const defaultSettings: AppSettings = {
   ownerEmail: 'cdiesen@repairmagic.com',
   ownerPhone: '(941) 780-3258',
   defaultProposalDepositPercent: 50,
-  monthlyReportingRetainer: 250,
+  monthlyReportingRetainer: 49,
   complianceFooter: 'Prepared for manual review. No rankings, revenue, or review outcomes are guaranteed.'
 };
 
@@ -65,11 +65,14 @@ function mergeWithDefaults(state: Partial<AppState>): AppState {
   const prospects = Array.isArray(state.prospects)
     ? state.prospects.map((lead, index) => normalizeProspect(lead, index)).filter((lead): lead is ProspectRecord => Boolean(lead))
     : defaults.prospects;
+  const settings = { ...defaults.settings, ...state.settings };
+  if (settings.monthlyReportingRetainer === 250) settings.monthlyReportingRetainer = defaults.settings.monthlyReportingRetainer;
+
   return {
     prospects: prospects.length ? prospects : defaults.prospects,
     filters: { ...defaults.filters, ...state.filters },
     selectedLeadId: typeof state.selectedLeadId === 'string' ? state.selectedLeadId : defaults.selectedLeadId,
-    settings: { ...defaults.settings, ...state.settings },
+    settings,
     updatedAt: typeof state.updatedAt === 'string' ? state.updatedAt : defaults.updatedAt
   };
 }

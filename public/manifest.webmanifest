@@ -8,10 +8,10 @@
   "description": "Offline-first prospect research dashboard for local website-first lead scoring.",
   "icons": [
     {
-      "src": "./icon.svg",
-      "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "src": "./launch-line-digital.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }

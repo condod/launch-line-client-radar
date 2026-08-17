@@ -7,19 +7,22 @@ const money = new Intl.NumberFormat('en-US', {
   style: 'currency'
 });
 
-export function buildProposalDraft(lead: ProspectRecord, settings: AppSettings): ProposalDraft {
-  const recommendedPackage = getSalesPackageDefinition(lead.packageRecommendation.package);
+export function buildProposalDraft(lead: ProspectRecord, settings: AppSettings, selectedPackageName = lead.packageRecommendation.package): ProposalDraft {
+  const recommendedPackage = getSalesPackageDefinition(selectedPackageName);
   const deposit = Math.round(recommendedPackage.setupPrice * (settings.defaultProposalDepositPercent / 100));
-  const monthly = Math.max(recommendedPackage.monthlyPrice, settings.monthlyReportingRetainer);
+  const monthly = recommendedPackage.monthlyPrice > 0
+    ? Math.max(recommendedPackage.monthlyPrice, settings.monthlyReportingRetainer)
+    : 0;
   const title = `${lead.business_name} - Local Lead Capture Proposal`;
-  const summary = `${lead.business_name} has local demand signals in ${lead.city}, but the current website, booking, Google, or follow-up path shows visible leakage. The first recommended move is ${lead.packageRecommendation.bestServiceToPitchFirst.toLowerCase()}.`;
-  const scope = [...new Set([...recommendedPackage.deliverables, ...lead.packageRecommendation.services])].slice(0, 10);
-  const investment = `${money.format(recommendedPackage.setupPrice)} setup, ${money.format(monthly)}/month optional reporting and optimization. Recommended deposit: ${money.format(deposit)}.`;
+  const summary = `${lead.business_name} has local demand signals in ${lead.city}, but the current website, booking, Google, or follow-up path shows visible leakage. The selected first move is ${recommendedPackage.name.toLowerCase()}.`;
+  const scope = recommendedPackage.deliverables;
+  const optionalCare = monthly > 0 ? `${money.format(monthly)}/month optional care plan` : 'no ongoing service fee';
+  const investment = `${money.format(recommendedPackage.setupPrice)} one-time setup, ${optionalCare}. Client-paid software: ${recommendedPackage.softwareCost}. Recommended deposit: ${money.format(deposit)}.`;
   const nextSteps = [
     'Confirm the business goal and service area.',
-    'Review the audit findings with the owner or decision-maker.',
-    'Approve scope, timeline, and deposit.',
-    'Collect brand assets, service details, and access needed for setup.'
+    'Approve the workflow, messages, scope, timeline, and deposit.',
+    'Open any required client-owned software accounts and grant setup access.',
+    'Test every trigger, handoff, opt-out path, and failure alert before launch.'
   ];
   const plainText = [
     title,
@@ -38,6 +41,10 @@ export function buildProposalDraft(lead: ProspectRecord, settings: AppSettings):
     '',
     'Timeline',
     recommendedPackage.timeline,
+    '',
+    'Automation',
+    recommendedPackage.automationSummary,
+    `Review cadence: ${recommendedPackage.reviewCadence}`,
     '',
     'Investment',
     investment,

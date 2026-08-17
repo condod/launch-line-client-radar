@@ -36,10 +36,10 @@ export function AppShell({ activeTab, businessName, guideTitle, ownerEmail, owne
     <div className="app-shell">
       <aside className="sidebar" aria-label="Primary navigation">
         <div className="brand-block">
-          <div className="brand-mark" aria-hidden="true">
-            LL
+          <div className="brand-logo-crop">
+            <img alt="Launch Line Digital" height="1254" src="./launch-line-digital.png" width="1254" />
           </div>
-          <div>
+          <div className="brand-copy">
             <p>{businessName}</p>
             <h1>{guideTitle}</h1>
           </div>

@@ -65,7 +65,7 @@ export function SettingsPanel({ settings, prospectCount, onUpdateSettings, onRes
             />
           </label>
           <label>
-            Minimum monthly retainer
+            Optional care plan floor
             <input
               min="0"
               type="number"

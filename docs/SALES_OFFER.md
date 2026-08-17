@@ -14,25 +14,39 @@ Launch Line Client Radar helps local service providers find businesses with visi
 - JSON backup and CSV export for handoff.
 - iPad-friendly standalone demo.
 
-## Suggested Packages To Sell
+## Automation-First Products To Sell
+
+The Offer Builder contains 10 selectable offers. Each offer separates the one-time implementation fee, optional Launch Line care plan, and software charges paid directly by the client.
+
+| Offer family | Setup range | Optional care | Sales role |
+| --- | ---: | ---: | --- |
+| Quick Wins | $149-$599 | $0-$49/month | Low-risk first purchase that fixes one visible leak. |
+| Automated Systems | $399-$1,995 | $49-$129/month | Connected lead, review, and follow-up workflows. |
+| Website Systems | $995-$1,495 | $49-$79/month | Owned websites with automated lead capture or booking. |
+
+Software subscriptions and usage are client-owned and billed separately. Optional care covers monitoring and small fixes; it is not required for the workflow to run.
+
+See `PRICING_CATALOG.md` for every product, pricing rationale, software benchmarks, and automation boundaries.
+
+## Operator Services
 
 ### Research Sprint
 
 Deliver 50-100 scored local prospects, top 20 manual audit notes, and CSV handoff.
 
-Suggested price: $750-$1,500.
+Suggested price: $399-$799.
 
 ### Website-First Growth Audit
 
 Deliver a scored prospect list plus proposal-ready recommendations for selected businesses.
 
-Suggested price: $1,500-$3,500.
+Suggested price: $599-$1,250.
 
 ### Managed Launch Line Pipeline
 
 Run weekly collection, audit, prioritization, manual outreach preparation, and proposal support.
 
-Suggested price: $500-$1,500/month plus implementation retainers.
+Suggested price: $299-$750/month plus implementation fees. Outreach remains manually reviewed and sent.
 
 ## Demo Script
 

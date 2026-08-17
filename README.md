@@ -11,9 +11,9 @@ Live app: https://condod.github.io/launch-line-client-radar/
 - Pipeline Board with stage movement from New through Won/Lost/Do not contact.
 - Audit Workspace with evidence toggles, instant radar rescoring, and a persisted 0-10 weighted sales scorecard.
 - Playbooks with vertical pain points, objections, and rebuttals.
-- Offer Builder with priced package definitions and client-ready proposal text.
+- Offer Builder with 10 selectable automation-first products, one-time setup pricing, software-cost disclosure, and client-ready proposal text.
 - Export Center with JSON backup/restore, CSV exports, print summary, and operator commands.
-- Settings with business identity, contact info, proposal defaults, retainer floor, and launch checklist.
+- Settings with business identity, contact info, proposal defaults, optional care-plan floor, and launch checklist.
 
 ## Setup
 
@@ -76,4 +76,4 @@ npm.cmd run export:standalone
 - Do not claim guaranteed rankings, reviews, revenue, or lead volume.
 - Review repair means compliant request timing, response workflows, consistent review links, customer-service fixes, and reporting.
 
-See `docs/LAUNCH_RUNBOOK.md`, `docs/SALES_OFFER.md`, `docs/SCORING_MODEL.md`, `docs/OUTREACH_PLAYBOOK.md`, and `docs/COMPLIANCE_NOTES.md` for operating details.
+See `docs/LAUNCH_RUNBOOK.md`, `docs/SALES_OFFER.md`, `docs/PRICING_CATALOG.md`, `docs/SCORING_MODEL.md`, `docs/OUTREACH_PLAYBOOK.md`, and `docs/COMPLIANCE_NOTES.md` for operating details.

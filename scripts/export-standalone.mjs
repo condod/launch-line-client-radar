@@ -32,13 +32,23 @@ async function inlineScripts(markup) {
     if (/^\s*(import|export)\s/m.test(js)) {
       throw new Error(`Standalone export found an ESM import/export in ${src}.`);
     }
-    next = next.replace(match[0], () => `<script>\n${js}\n</script>`);
+    next = next.replace(match[0], '');
+    next = next.replace('</body>', () => `  <script>\n${js}\n</script>\n  </body>`);
   }
   return next;
 }
 
+async function inlineBrandAsset(markup) {
+  const filename = 'launch-line-digital.png';
+  const image = await readFile(join(distDir, filename));
+  const dataUrl = `data:image/png;base64,${image.toString('base64')}`;
+  const withoutExternalFavicon = markup.replace(/\s*<link rel="icon"[^>]*launch-line-digital\.png[^>]*>\s*/g, '\n');
+  return withoutExternalFavicon.split(`./${filename}`).join(dataUrl);
+}
+
 let standalone = await inlineStyles(html);
 standalone = await inlineScripts(standalone);
+standalone = await inlineBrandAsset(standalone);
 standalone = standalone
   .replace(/\s*<link rel="manifest"[^>]*>\s*/g, '\n')
   .replace(/crossorigin/g, '')

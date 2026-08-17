@@ -222,8 +222,12 @@ export type ManualProspectInput = {
 
 export type SalesPackageDefinition = {
   name: string;
+  category: 'Quick Win' | 'Automated System' | 'Website System';
   setupPrice: number;
   monthlyPrice: number;
+  softwareCost: string;
+  automationSummary: string;
+  reviewCadence: string;
   timeline: string;
   positioning: string;
   deliverables: string[];
